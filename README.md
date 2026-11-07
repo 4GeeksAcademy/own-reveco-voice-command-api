@@ -1,207 +1,86 @@
-# Voice Command API at 4Geeks Academy
+# Voice Command API
 
-<!-- hide -->
+API del ejercicio de 4Geeks Academy para administrar tareas mediante texto o audio. Groq transcribe el audio e interpreta la instrucción; el backend ejecuta la operación solicitada.
 
-By [@ehiber](https://github.com/ehiber) and [other contributors](https://github.com/4GeeksAcademy/voice-command-api/graphs/contributors) at [4Geeks Academy](https://4geeksacademy.com/)
+## Requisitos
 
-[![build by developers](https://img.shields.io/badge/build_by-Developers-blue)](https://4geeks.com)
-[![4Geeks Academy](https://img.shields.io/twitter/follow/4geeksacademy?style=social&logo=x)](https://x.com/4geeksacademy)
+- Python 3.11 o superior, [uv](https://docs.astral.sh/uv/) y Node.js con npm.
+- Una cuenta de Groq y una clave válida configurada localmente.
 
-_Estas instrucciones tambien estan disponibles en [espanol](./README.es.md)._
+## Instalación y configuración
 
-**Before you start**: Read the [how to start a coding project](https://4geeks.com/lesson/how-to-start-a-project) guide before writing code.
-
-> We need you! These exercises are built and maintained in collaboration with people like you. If you find any bug 🐞 or typo, please contribute and/or report it.
-
-<!-- endhide -->
-
----
-
-## 🎯 Your challenge
-
-This repository is the starter template for the **Voice Command API** project.
-
-The frontend is already built. It records up to **20 seconds** of audio in the browser, sends that audio to your backend, and shows:
-
-- the transcription returned by the API
-- the final task response returned by the API
-
-Your job is to implement the backend so the full voice-to-action flow works end to end.
-
----
-
-## How the project works
-
-The frontend uses a single public entry point:
-
-- `POST /transcribe`
-
-The frontend does **not** resolve intents with the Web Speech API. It only captures audio (up to 20 seconds), sends the file to `POST /transcribe`, and shows the backend transcription to make debugging easier.
-
-That endpoint must:
-
-1. receive recorded audio from the frontend
-2. transcribe it to text
-3. reuse the same routing logic as `POST /instruction`
-4. execute the corresponding task action in memory
-5. return the transcription, the instruction payload, and the final result
-
-Your backend must also expose:
-
-- `POST /instruction`
-- `GET /tasks`
-- `POST /tasks`
-- `PUT /tasks/{task_id}`
-- `PATCH /tasks/{task_id}`
-- `DELETE /tasks/{task_id}`
-
-Important:
-
-- Use **in-memory storage only**. No database and no files.
-- The frontend is provided and should not be modified as part of the exercise.
-- The backend included in this repository is only a template. You must implement the missing logic.
-
----
-
-## Repository structure
-
-```text
-voice-command-api/
-|-- .devcontainer/           # Codespaces setup
-|-- frontend/                # Ready-made frontend
-|   |-- public/
-|   `-- src/
-|-- src/
-|   `-- app/
-|       |-- api/routes/      # /transcribe, /instruction, /tasks
-|       |-- core/            # Settings and config
-|       |-- schemas/         # Request and response contracts
-|       |-- services/        # Your implementation goes here
-|       `-- utils/
-|-- pyproject.toml
-|-- README.md
-`-- README.es.md
-```
-
----
-
-## 🌱 How to start the project
-
-You can open this project in [GitHub Codespaces](https://codespaces.new/4GeeksAcademy/voice-command-api) or clone it locally.
-
-If you use Codespaces, the repository already includes a `.devcontainer` prepared for Python, Node, FastAPI, and Vite.
-
-### Option A: GitHub Codespaces
-
-1. Open the repository in Codespaces.
-2. Wait for the dev container to finish installing dependencies.
-3. Create `.env` from `.env.example`.
-4. Create `frontend/.env` from `frontend/.env.example`.
-5. Run the backend and frontend from the terminal tabs.
-
-### Option B: Local setup
-
-```bash
-git clone https://github.com/4GeeksAcademy/voice-command-api
-cd voice-command-api
-```
-
-Create your own repository and update the remote:
-
-```bash
-git remote set-url origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY
-```
-
-### Backend setup
-
-Create a `.env` file from `.env.example` and fill in your Groq credentials.
-
-Install dependencies and run the API:
+En la raíz del proyecto:
 
 ```bash
 uv sync
-uv run uvicorn src.main:app --reload
+cp .env.example .env
 ```
 
-### Frontend setup
+Edita `.env` y configura `GROQ_API_KEY` sin compartirla. Las demás opciones incluyen `GROQ_MODEL` (por defecto `llama-3.1-8b-instant`), `GROQ_TRANSCRIPTION_MODEL` (por defecto `whisper-large-v3-turbo`), `REQUEST_TIMEOUT_SECONDS` y `ALLOWED_ORIGINS` (separados por comas). La disponibilidad de modelos depende de Groq y de la cuenta.
 
-Create `frontend/.env` from `frontend/.env.example`.
+Inicia el backend:
 
-Run the frontend:
+```bash
+uv run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+La documentación interactiva está en `http://127.0.0.1:8000/docs`. En otra terminal inicia el frontend:
 
 ```bash
 cd frontend
+cp .env.example .env
 npm install
 npm run dev
 ```
 
----
+El frontend usa `VITE_API_BASE_URL`, cuyo ejemplo apunta a `http://127.0.0.1:8000`. En Codespaces configura esa variable con la URL pública HTTPS del puerto 8000; el origen del puerto 5173 se añade automáticamente a CORS cuando Codespaces proporciona su nombre y dominio.
 
-## 💻 What you need to do
+## Ejemplos de la API
 
-- [ ] Create a module-level `tasks` list with `id`, `title`, and `done`, using unique incremental IDs.
-- [ ] Implement `GET /tasks`, `POST /tasks`, `PUT /tasks/{task_id}`, `PATCH /tasks/{task_id}`, and `DELETE /tasks/{task_id}` using in-memory state.
-- [ ] Implement `POST /instruction` to receive `{ "transcription": "..." }`, call Groq, and return **only** routing JSON (no task execution):
+Los siguientes comandos usan el backend local. En los ejemplos con ID, crea primero la tarea y sustituye `1` por su ID real cuando corresponda.
 
-```json
-{
-  "endpoint": "/tasks",
-  "method": "POST",
-  "params": { "title": "Buy groceries" }
-}
+Estado:
+
+```bash
+curl http://127.0.0.1:8000/
 ```
 
-- [ ] Implement `POST /transcribe` to accept `multipart/form-data`, convert audio to text, reuse `/instruction` logic, execute the selected action, and return `transcription`, `instruction`, and `result`.
-- [ ] Do not hardcode intent matching with manual rules such as `if "add" in text`.
+Listar y crear tareas:
 
-⚠️ **IMPORTANT:** The frontend does not resolve intents with Web Speech API. It only captures audio (up to 20 seconds), sends it to `POST /transcribe`, and shows backend transcription to debug STT vs. routing issues.
-
-```json
-{
-  "transcription": "add buy groceries to my list",
-  "instruction": {
-    "endpoint": "/tasks",
-    "method": "POST",
-    "params": {
-      "title": "Buy groceries"
-    }
-  },
-  "result": {
-    "id": 1,
-    "title": "Buy groceries",
-    "done": false
-  }
-}
+```bash
+curl http://127.0.0.1:8000/tasks
+curl -X POST http://127.0.0.1:8000/tasks -H 'Content-Type: application/json' -d '{"title":"comprar pan"}'
 ```
 
----
+Reemplazar, modificar parcialmente y borrar una tarea:
 
-## Debugging tip
+```bash
+curl -X PUT http://127.0.0.1:8000/tasks/1 -H 'Content-Type: application/json' -d '{"title":"comprar leche","done":false}'
+curl -X PATCH http://127.0.0.1:8000/tasks/1 -H 'Content-Type: application/json' -d '{"done":true}'
+curl -X DELETE http://127.0.0.1:8000/tasks/1
+```
 
-If the transcription shown in the frontend is already wrong, the problem is in the audio capture or speech-to-text step.
+Interpretar una instrucción sin ejecutar la operación:
 
-If the transcription is correct but the action is wrong, the problem is in `/instruction`.
+```bash
+curl -X POST http://127.0.0.1:8000/instruction -H 'Content-Type: application/json' -d '{"transcription":"Añade comprar pan"}'
+```
 
----
+Otras frases: «Muestra mis tareas», «Marca comprar pan como hecha», «Renombra comprar pan a comprar leche», «Borra la segunda» y «Replace the first task with call Ana, not done». La resolución de nombres y posiciones utiliza las tareas existentes.
 
-## ✅ What we will evaluate
+Interpretar y ejecutar texto, o transcribir y ejecutar audio:
 
-- [ ] `POST /transcribe` accepts audio, transcribes it, and reuses `/instruction` routing logic.
-- [ ] `POST /instruction` receives plain text and returns only routing JSON (no action execution).
-- [ ] `GET /tasks`, `POST /tasks`, `PUT /tasks/{task_id}`, `PATCH /tasks/{task_id}`, and `DELETE /tasks/{task_id}` work correctly with in-memory state.
-- [ ] The frontend displays the transcription returned by the backend to help distinguish STT errors from routing errors.
+```bash
+curl -X POST http://127.0.0.1:8000/transcribe -H 'Content-Type: application/json' -d '{"transcription":"Añade comprar pan"}'
+curl -X POST http://127.0.0.1:8000/transcribe -F 'file=@audio.webm' -F 'language=es'
+```
 
----
+En audio, `language` es opcional; al omitirlo se detecta automáticamente. Ambas variantes de `/transcribe` devuelven `transcription`, `instruction` y `result`. `/instruction` solo devuelve la instrucción interpretada y no modifica tareas.
 
-## 📦 How to submit this project
+## Pruebas y almacenamiento
 
-1. Push your solution to your GitHub repository.
-2. Make sure backend and frontend are included and runnable locally.
-3. Share the repository URL and a short video/GIF showing:
-   - audio recording (20 seconds max),
-   - transcription visible in the frontend,
-   - correct task action execution.
+```bash
+uv run pytest
+```
 
----
-
-This and many other projects are built by students as part of the [Coding Bootcamps](https://4geeksacademy.com/) at 4Geeks Academy. Learn more about the [Full-Stack Software Developer](https://4geeksacademy.com/en/career-programs/full-stack), [Data Science & Machine Learning](https://4geeksacademy.com/en/career-programs/data-science-ml), [Cybersecurity](https://4geeksacademy.com/en/career-programs/cybersecurity), and [AI Engineering](https://4geeksacademy.com/en/career-programs/ai-engineering) programs.
+Las pruebas simulan Groq y no necesitan una clave real. Las tareas viven únicamente en memoria: se pierden al reiniciar el proceso y no se comparten entre varios procesos o trabajadores.
