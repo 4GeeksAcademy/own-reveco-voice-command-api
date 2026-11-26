@@ -16,7 +16,7 @@ uv sync
 cp .env.example .env
 ```
 
-Edita `.env` y configura `GROQ_API_KEY` sin compartirla. Las demás opciones incluyen `GROQ_MODEL` (por defecto `llama-3.1-8b-instant`), `GROQ_TRANSCRIPTION_MODEL` (por defecto `whisper-large-v3-turbo`), `REQUEST_TIMEOUT_SECONDS` y `ALLOWED_ORIGINS` (separados por comas). La disponibilidad de modelos depende de Groq y de la cuenta.
+Edita `.env` y configura `GROQ_API_KEY` sin compartirla. Las demás opciones incluyen `GROQ_MODEL` (por defecto `openai/gpt-oss-20b`), `GROQ_TRANSCRIPTION_MODEL` (por defecto `whisper-large-v3-turbo`), `REQUEST_TIMEOUT_SECONDS` y `ALLOWED_ORIGINS` (separados por comas). La disponibilidad de modelos depende de Groq y de la cuenta.
 
 Inicia el backend:
 
